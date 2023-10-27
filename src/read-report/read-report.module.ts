@@ -115,7 +115,7 @@ export class ReadReportModule {
     });
 
     // //Doc lai file loi
-    const intervalInMilliseconds = 10 * 1000;
+    const intervalInMilliseconds = 5 * 60 * 1000;
     setInterval(async () => {
       const promisesErrorDir = [];
 
