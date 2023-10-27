@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import * as fs from 'fs-extra';
 import * as iconv from 'iconv-lite';
+import * as getWinShortcut from 'get-windows-shortcut-properties';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Gc5_report } from '../schemas/gc5_report.schema';
@@ -32,7 +33,7 @@ export class ReadReportService {
 
   async readFileContents(folderPath: string) {
     const shortcuts = await this.readShortcuts(folderPath);
-    console.log(shortcuts);
+    
     if (shortcuts && shortcuts.length > 0) {
       for (const file of shortcuts) {
         if (
@@ -48,6 +49,18 @@ export class ReadReportService {
         }
       }
     }
+  }
+
+  async readRoot(dir: string) {
+    const rootInfo = fs.readdirSync(dir);
+    return rootInfo.map((item: string) => {
+      if (item.split('.').pop() === 'lnk') {
+        const shortcutInfo = getWinShortcut.sync(dir + '/' + item);
+        const targetPath = shortcutInfo[0].TargetPath;
+        return targetPath.replace(/\\/g, '/') + item.split('.').shift();
+      }
+      return dir + '/' + item;
+    });
   }
 
   private async readShortcuts(dir: any) {
@@ -97,31 +110,31 @@ export class ReadReportService {
     };
     try {
       switch (true) {
-        case folderPath.includes('D:'):
+        case folderPath.toUpperCase().includes('GC 5'):
           await this.Gc5_reportModel.create(data);
           break;
-        case folderPath.includes('Y:'):
+        case folderPath.toUpperCase().includes('GC 4'):
           await this.Gc4_reportModel.create(data);
           break;
-        case folderPath.includes('U:'):
+        case folderPath.toUpperCase().includes('GC 3'):
           await this.Gc3_reportModel.create(data);
           break;
-        case folderPath.includes('X:'):
+        case folderPath.toUpperCase().includes('GC 2'):
           await this.Gc2_reportModel.create(data);
           break;
-        case folderPath.includes('W:'):
+        case folderPath.toUpperCase().includes('GC 1'):
           await this.Gc1_reportModel.create(data);
           break;
-        case folderPath.includes('R:'):
+        case folderPath.toUpperCase().includes('AAS'):
           await this.Aas_reportModel.create(data);
           break;
-        case folderPath.includes('S:'):
+        case folderPath.toUpperCase().includes('UV 1800'):
           await this.Uv1800_reportModel.create(data);
           break;
-        case folderPath.includes('T:'):
+        case folderPath.toUpperCase().includes('UV 2600'):
           await this.Uv2600_reportModel.create(data);
           break;
-        case folderPath.includes('V:'):
+        case folderPath.toUpperCase().includes('HPLC'):
           await this.Hplc_reportModel.create(data);
           break;
         default:

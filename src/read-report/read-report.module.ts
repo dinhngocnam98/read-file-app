@@ -65,19 +65,10 @@ import { Hplc_report, Hplc_reportSchema } from '../schemas/hplc_report.schema';
 export class ReadReportModule {
   constructor(private reportService: ReadReportService) {}
   async onApplicationBootstrap() {
-    const folderPaths = ['../testTxT'];
+    // const rootDir = ['../testTxT'];
+    const rootDir = 'D:/root';
 
-    // const folderPaths = [
-    //   'D:/DAM CA MAU/DATA',
-    //   'V:/HPLC',
-    //   'Y:',
-    //   'U:',
-    //   'X:',
-    //   'S:',
-    //   'T:',
-    //   'R:',
-    //   'W:',
-    // ];
+    const folderPaths = await this.reportService.readRoot(rootDir);
 
     const promises = [];
     folderPaths.forEach((folderPath) => {
@@ -88,30 +79,7 @@ export class ReadReportModule {
       .then(() => console.log('All shortcuts had read!'))
       .catch((error) => console.error(error));
 
-    // //Doc lai file loi
-    const intervalInMilliseconds = 10 * 1000;
-    setInterval(async () => {
-      const promisesErrorDir = [];
-
-      if (errorFolderWatchers.length > 0) {
-        console.log('errorFolderWatchers', errorFolderWatchers);
-        errorFolderWatchers.forEach((folderPath) => {
-          watcherChokidar(folderPath);
-        });
-      }
-      if (this.reportService.errorDir.length > 0) {
-        console.log('errorDir', this.reportService.errorDir);
-        this.reportService.errorDir.forEach((folderPath) => {
-          const promise = this.reportService.readFileContents(folderPath);
-          promisesErrorDir.push(promise);
-        });
-        await Promise.all(promisesErrorDir).catch((error) =>
-          console.error(error),
-        );
-      }
-    }, intervalInMilliseconds);
-
-    // Theo dõi sự thay đổi trong thư mục và cập nhật nội dung của các tệp tin .txt
+    //   // Theo dõi sự thay đổi trong thư mục và cập nhật nội dung của các tệp tin .txt
     const watchers = [];
     const errorFolderWatchers = [];
     const watcherChokidar = (folderPath: string) => {
@@ -135,7 +103,7 @@ export class ReadReportModule {
       });
       watchers.push(watcher);
     };
-    folderPaths.forEach((folderPath) => {
+    folderPaths.forEach((folderPath: string) => {
       watcherChokidar(folderPath);
     });
 
@@ -145,5 +113,28 @@ export class ReadReportModule {
         await this.reportService.readFileContents(pathEdit);
       });
     });
+
+    // //Doc lai file loi
+    const intervalInMilliseconds = 10 * 1000;
+    setInterval(async () => {
+      const promisesErrorDir = [];
+
+      if (errorFolderWatchers.length > 0) {
+        console.log('errorFolderWatchers', errorFolderWatchers);
+        errorFolderWatchers.forEach((folderPath) => {
+          watcherChokidar(folderPath);
+        });
+      }
+      if (this.reportService.errorDir.length > 0) {
+        console.log('errorDir', this.reportService.errorDir);
+        this.reportService.errorDir.forEach((folderPath) => {
+          const promise = this.reportService.readFileContents(folderPath);
+          promisesErrorDir.push(promise);
+        });
+        await Promise.all(promisesErrorDir).catch((error) =>
+          console.error(error),
+        );
+      }
+    }, intervalInMilliseconds);
   }
 }
