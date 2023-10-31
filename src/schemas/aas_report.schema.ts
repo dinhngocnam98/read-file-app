@@ -14,11 +14,12 @@ export class Aas_report {
   @Prop()
   signal_2: object[];
 
-  @Prop()
+  @Prop({default: Date.now})
   created_at: Date;
 
-  @Prop()
+  @Prop({default: Date.now, set: (date: Date) => date || Date.now()})
   updated_at: Date;
 }
+
 
 export const Aas_reportSchema = SchemaFactory.createForClass(Aas_report);

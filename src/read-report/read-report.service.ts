@@ -33,7 +33,7 @@ export class ReadReportService {
 
   async readFileContents(folderPath: string) {
     const shortcuts = await this.readShortcuts(folderPath);
-    
+
     if (shortcuts && shortcuts.length > 0) {
       for (const file of shortcuts) {
         if (
@@ -104,10 +104,11 @@ export class ReadReportService {
       } else signalData2.push(content);
     }
     const data = {
-      folder_Dir: folderPath,
+      folder_dir: folderPath,
       signal_1: signalData1,
       signal_2: signalData2,
     };
+    
     try {
       switch (true) {
         case folderPath.toUpperCase().includes('GC 5'):

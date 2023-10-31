@@ -69,7 +69,8 @@ export class ReadReportModule {
     const rootDir = 'D:/root';
 
     const folderPaths = await this.reportService.readRoot(rootDir);
-
+    console.log(folderPaths);
+    
     const promises = [];
     folderPaths.forEach((folderPath) => {
       const promise = this.reportService.readFileContents(folderPath);
@@ -79,7 +80,7 @@ export class ReadReportModule {
       .then(() => console.log('All shortcuts had read!'))
       .catch((error) => console.error(error));
 
-    //   // Theo dõi sự thay đổi trong thư mục và cập nhật nội dung của các tệp tin .txt
+    // Theo dõi sự thay đổi trong thư mục và cập nhật nội dung của các tệp tin .txt
     const watchers = [];
     const errorFolderWatchers = [];
     const watcherChokidar = (folderPath: string) => {
@@ -115,7 +116,7 @@ export class ReadReportModule {
     });
 
     // //Doc lai file loi
-    const intervalInMilliseconds = 5 * 60 * 1000;
+    const intervalInMilliseconds = 15 * 60 * 1000;
     setInterval(async () => {
       const promisesErrorDir = [];
 
