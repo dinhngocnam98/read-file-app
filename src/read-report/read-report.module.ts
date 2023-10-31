@@ -17,6 +17,7 @@ import {
 } from '../schemas/uv2600_report.schema';
 import { Aas_report, Aas_reportSchema } from '../schemas/aas_report.schema';
 import { Hplc_report, Hplc_reportSchema } from '../schemas/hplc_report.schema';
+import { Subject, debounceTime } from 'rxjs';
 
 @Module({
   imports: [
@@ -69,9 +70,10 @@ export class ReadReportModule {
     const rootDir = 'D:/root';
 
     const folderPaths = await this.reportService.readRoot(rootDir);
-    
+    console.log(folderPaths);
+
     const promises = [];
-    folderPaths.forEach((folderPath) => {
+    folderPaths.forEach((folderPath: string) => {
       const promise = this.reportService.readFileContents(folderPath);
       promises.push(promise);
     });
@@ -80,13 +82,15 @@ export class ReadReportModule {
       .catch((error) => console.error(error));
 
     // Theo dõi sự thay đổi trong thư mục và cập nhật nội dung của các tệp tin .txt
-    const watchers = [];
+    const watchers: chokidar.FSWatcher[] = [];
+    const eventSubject = new Subject();
     const errorFolderWatchers = [];
     const watcherChokidar = (folderPath: string) => {
       const watcher = chokidar.watch(folderPath, {
         persistent: true,
         usePolling: true,
         ignoreInitial: true,
+        depth: 3,
       });
 
       watcher.on('error', (error) => {
@@ -103,15 +107,20 @@ export class ReadReportModule {
       });
       watchers.push(watcher);
     };
+
     folderPaths.forEach((folderPath: string) => {
       watcherChokidar(folderPath);
     });
 
-    watchers.forEach((watcher) => {
-      watcher.on('addDir', async (path: string) => {
-        const pathEdit = path.replace(/\\/g, '/').replace(':', ':/');
-        await this.reportService.readFileContents(pathEdit);
+    watchers.forEach((watcher: any) => {
+      watcher.on('addDir', (path: string) => {
+        eventSubject.next({ event: 'addDir', path: path });
       });
+    });
+
+    eventSubject.pipe(debounceTime(1000)).subscribe((event: any) => {
+      const pathEdit = event.path.replace(/\\/g, '/');
+      this.reportService.readFileContents(pathEdit);
     });
 
     // //Doc lai file loi
