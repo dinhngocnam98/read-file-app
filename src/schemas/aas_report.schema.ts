@@ -6,7 +6,7 @@ export type ReportDocument = HydratedDocument<Aas_report>;
 @Schema()
 export class Aas_report {
   @Prop()
-  folderDir: string;
+  folder_dir: string;
 
   @Prop()
   signal_1: object[];

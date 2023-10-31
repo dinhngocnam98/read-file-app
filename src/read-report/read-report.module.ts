@@ -69,7 +69,6 @@ export class ReadReportModule {
     const rootDir = 'D:/root';
 
     const folderPaths = await this.reportService.readRoot(rootDir);
-    console.log(folderPaths);
     
     const promises = [];
     folderPaths.forEach((folderPath) => {

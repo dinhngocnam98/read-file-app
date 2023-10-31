@@ -6,7 +6,7 @@ export type ReportDocument = HydratedDocument<Gc4_report>;
 @Schema()
 export class Gc4_report {
   @Prop()
-  folderDir: string;
+  folder_dir: string;
 
   @Prop()
   signal_1: object[];

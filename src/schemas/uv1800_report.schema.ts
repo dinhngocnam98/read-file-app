@@ -6,7 +6,7 @@ export type ReportDocument = HydratedDocument<Uv1800_report>;
 @Schema()
 export class Uv1800_report {
   @Prop()
-  folderDir: string;
+  folder_dir: string;
 
   @Prop()
   signal_1: object[];

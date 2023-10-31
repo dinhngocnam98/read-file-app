@@ -39,9 +39,9 @@ export class ReadReportService {
         if (
           file.toUpperCase().endsWith('.TXT') &&
           file.toUpperCase().includes('REPORT') &&
-          !file.toUpperCase().includes('IRREPORT')
+          !file.toUpperCase().includes('IRREPORT') &&
+          !file.toUpperCase().includes('SAVED')
         ) {
-          if (!file.toUpperCase().includes('SAVED'))
             await this.readTXT(folderPath, file);
         } else {
           const newFolderPath = folderPath + '/' + file;
@@ -84,6 +84,11 @@ export class ReadReportService {
   private async readTXT(folderPath: string, file: string) {
     const filePath = `${folderPath}/${file}`;
     const contents = await this.extractSignalData(filePath);
+      const newFile = file
+        .toLowerCase()
+        .replace('_saved.txt','.txt')
+        .toUpperCase();
+      fs.rename(`${folderPath}/${file}`, `${folderPath}/${newFile}`);
     const isSaved = await this.saveDatabase(contents, folderPath);
     if (isSaved) {
       const newFile = file
@@ -112,7 +117,7 @@ export class ReadReportService {
     try {
       switch (true) {
         case folderPath.toUpperCase().includes('GC 5'):
-          await this.Gc5_reportModel.create(data);
+          await this.Gc5_reportModel.create({data});
           break;
         case folderPath.toUpperCase().includes('GC 4'):
           await this.Gc4_reportModel.create(data);

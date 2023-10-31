@@ -6,7 +6,7 @@ export type ReportDocument = HydratedDocument<Hplc_report>;
 @Schema()
 export class Hplc_report {
   @Prop()
-  folderDir: string;
+  folder_dir: string;
 
   @Prop()
   signal_1: object[];
