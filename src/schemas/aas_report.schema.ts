@@ -9,10 +9,13 @@ export class Aas_report {
   folder_dir: string;
 
   @Prop()
-  signal_1: object[];
+  file_path: string;
 
   @Prop()
-  signal_2: object[];
+  chemical_symbol: string;
+
+  @Prop()
+  data_lab: object[];
 
   @Prop({default: Date.now})
   created_at: Date;

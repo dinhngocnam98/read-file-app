@@ -11,7 +11,6 @@ import { Gc2_report } from '../schemas/gc2_report.schema';
 import { Gc1_report } from '../schemas/gc1_report.schema';
 import { Uv1800_report } from '../schemas/uv1800_report.schema';
 import { Uv2600_report } from '../schemas/uv2600_report.schema';
-import { Aas_report } from '../schemas/aas_report.schema';
 import { Hplc_report } from '../schemas/hplc_report.schema';
 
 @Injectable()
@@ -22,18 +21,12 @@ export class ReadReportService {
     @InjectModel(Gc3_report.name) private Gc3_reportModel: Model<Gc3_report>,
     @InjectModel(Gc2_report.name) private Gc2_reportModel: Model<Gc2_report>,
     @InjectModel(Gc1_report.name) private Gc1_reportModel: Model<Gc1_report>,
-    @InjectModel(Uv1800_report.name)
-    private Uv1800_reportModel: Model<Uv1800_report>,
-    @InjectModel(Uv2600_report.name)
-    private Uv2600_reportModel: Model<Uv2600_report>,
-    @InjectModel(Aas_report.name) private Aas_reportModel: Model<Aas_report>,
     @InjectModel(Hplc_report.name) private Hplc_reportModel: Model<Hplc_report>,
   ) {}
-  errorDir: string[] = [];
+  errorDir: any[] = [];
 
-  async readFileContents(folderPath: string) {
-    const shortcuts = await this.readShortcuts(folderPath);
-
+  async readFileContents(data: any) {
+    const shortcuts = await this.readShortcuts(data);
     if (shortcuts && shortcuts.length > 0) {
       for (const file of shortcuts) {
         if (
@@ -42,9 +35,12 @@ export class ReadReportService {
           !file.toUpperCase().includes('IRREPORT') &&
           !file.toUpperCase().includes('SAVED')
         ) {
-            await this.readTXT(folderPath, file);
+          await this.readReport(data, file);
         } else {
-          const newFolderPath = folderPath + '/' + file;
+          const newFolderPath = {
+            folder_dir: data.folder_dir + '/' + file,
+            device: data.device,
+          };
           await this.readFileContents(newFolderPath);
         }
       }
@@ -53,54 +49,63 @@ export class ReadReportService {
 
   async readRoot(dir: string) {
     const rootInfo = fs.readdirSync(dir);
-    return rootInfo.map((item: string) => {
+    const rootFilter = rootInfo.filter((item) => item.includes('GC') || item.includes('HPLC'));
+    return rootFilter.map((item: string) => {
       if (item.split('.').pop() === 'lnk') {
         const shortcutInfo = getWinShortcut.sync(dir + '/' + item);
         const targetPath = shortcutInfo[0].TargetPath;
-        return targetPath.replace(/\\/g, '/') + item.split('.').shift();
+        return {
+          folder_dir: targetPath.replace(/\\/g, '/'),
+          device: item.split('.').shift(),
+        };
       }
-      return dir + '/' + item;
+      return {
+        folder_dir: dir + '/' + item,
+        device: item,
+      };
     });
   }
 
-  private async readShortcuts(dir: any) {
+  private async readShortcuts(data: any) {
     try {
-      const stats = await fs.promises.stat(dir);
+      const stats = await fs.promises.stat(data.folder_dir);
       if (stats.isDirectory()) {
-        const indexErrorDir = this.errorDir.indexOf(dir);
+        const indexErrorDir = this.errorDir.findIndex(
+          (item) => item.device === data.device,
+        );
         if (indexErrorDir !== -1) {
           this.errorDir.splice(indexErrorDir, 1);
         }
-        const shortcuts = fs.readdirSync(dir);
+        const shortcuts = fs.readdirSync(data.folder_dir);
         return shortcuts.filter((file: string) => file !== '.DS_Store');
       }
     } catch (err) {
-      const indexErrorDir = this.errorDir.indexOf(dir);
+      const indexErrorDir = this.errorDir.findIndex(
+        (item) => item.device === data.device,
+      );
       if (indexErrorDir === -1) {
-        this.errorDir.push(dir);
+        this.errorDir.push({
+          folder_dir: data.folder_dir,
+          device: data.device,
+        });
       }
     }
   }
-  private async readTXT(folderPath: string, file: string) {
-    const filePath = `${folderPath}/${file}`;
+  private async readReport(data: any, file: string) {
+    const filePath = `${data.folder_dir}/${file}`;
     const contents = await this.extractSignalData(filePath);
-      const newFile = file
-        .toLowerCase()
-        .replace('_saved.txt','.txt')
-        .toUpperCase();
-      fs.rename(`${folderPath}/${file}`, `${folderPath}/${newFile}`);
-    const isSaved = await this.saveDatabase(contents, folderPath);
+    const isSaved = await this.saveReportDb(contents, data);
     if (isSaved) {
       const newFile = file
         .toLowerCase()
         .replace('.txt', '_saved.txt')
         .toUpperCase();
-      fs.rename(`${folderPath}/${file}`, `${folderPath}/${newFile}`);
+      fs.rename(`${data.folder_dir}/${file}`, `${data.folder_dir}/${newFile}`);
     }
   }
 
   // Lưu dữ liệu vào database
-  async saveDatabase(contents: any[], folderPath: string) {
+  async saveReportDb(contents: any[], data: any) {
     const signalData1 = [];
     const signalData2 = [];
     for (const content of contents) {
@@ -108,40 +113,27 @@ export class ReadReportService {
         signalData1.push(content);
       } else signalData2.push(content);
     }
-    const data = {
-      folder_dir: folderPath,
+    const result = {
+      folder_dir: data.folder_dir,
       signal_1: signalData1,
       signal_2: signalData2,
     };
-    
     try {
       switch (true) {
-        case folderPath.toUpperCase().includes('GC 5'):
-          await this.Gc5_reportModel.create({data});
+        case data.device.toUpperCase().includes('GC 5'):
+          await this.Gc5_reportModel.create(result);
           break;
-        case folderPath.toUpperCase().includes('GC 4'):
-          await this.Gc4_reportModel.create(data);
+        case data.device.toUpperCase().includes('GC 4'):
+          await this.Gc4_reportModel.create(result);
           break;
-        case folderPath.toUpperCase().includes('GC 3'):
-          await this.Gc3_reportModel.create(data);
+        case data.device.toUpperCase().includes('GC 3'):
+          await this.Gc3_reportModel.create(result);
           break;
-        case folderPath.toUpperCase().includes('GC 2'):
-          await this.Gc2_reportModel.create(data);
+        case data.device.toUpperCase().includes('GC 2'):
+          await this.Gc2_reportModel.create(result);
           break;
-        case folderPath.toUpperCase().includes('GC 1'):
-          await this.Gc1_reportModel.create(data);
-          break;
-        case folderPath.toUpperCase().includes('AAS'):
-          await this.Aas_reportModel.create(data);
-          break;
-        case folderPath.toUpperCase().includes('UV 1800'):
-          await this.Uv1800_reportModel.create(data);
-          break;
-        case folderPath.toUpperCase().includes('UV 2600'):
-          await this.Uv2600_reportModel.create(data);
-          break;
-        case folderPath.toUpperCase().includes('HPLC'):
-          await this.Hplc_reportModel.create(data);
+        case data.device.toUpperCase().includes('GC 1'):
+          await this.Gc1_reportModel.create(result);
           break;
         default:
           throw new Error('Invalid folder for database');

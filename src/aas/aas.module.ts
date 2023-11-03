@@ -1,12 +1,7 @@
 import { Module } from '@nestjs/common';
-import { ReadReportService } from './read-report.service';
+import { AasService } from './aas.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Gc5_report, Gc5_reportSchema } from '../schemas/gc5_report.schema';
-import { Gc4_report, Gc4_reportSchema } from '../schemas/gc4_report.schema';
-import { Gc3_report, Gc3_reportSchema } from '../schemas/gc3_report.schema';
-import { Gc2_report, Gc2_reportSchema } from '../schemas/gc2_report.schema';
-import { Gc1_report, Gc1_reportSchema } from '../schemas/gc1_report.schema';
-import { Hplc_report, Hplc_reportSchema } from '../schemas/hplc_report.schema';
+import { Aas_report, Aas_reportSchema } from 'src/schemas/aas_report.schema';
 import { Subject, debounceTime } from 'rxjs';
 import { watcherChokidar } from 'src/common/watcher';
 
@@ -14,55 +9,33 @@ import { watcherChokidar } from 'src/common/watcher';
   imports: [
     MongooseModule.forFeature([
       {
-        name: Gc5_report.name,
-        schema: Gc5_reportSchema,
-      },
-      {
-        name: Gc4_report.name,
-        schema: Gc4_reportSchema,
-      },
-      {
-        name: Gc3_report.name,
-        schema: Gc3_reportSchema,
-      },
-      {
-        name: Gc2_report.name,
-        schema: Gc2_reportSchema,
-      },
-
-      {
-        name: Gc1_report.name,
-        schema: Gc1_reportSchema,
-      },
-      {
-        name: Hplc_report.name,
-        schema: Hplc_reportSchema,
+        name: Aas_report.name,
+        schema: Aas_reportSchema,
       },
     ]),
   ],
-  providers: [ReadReportService, watcherChokidar],
+  providers: [AasService, watcherChokidar],
 })
-export class ReadReportModule {
+export class AasModule {
   constructor(
-    private reportService: ReadReportService,
+    private aasService: AasService,
     private watcherChokidar: watcherChokidar,
   ) {}
+
   async onApplicationBootstrap() {
-    // const rootDir = ['../testTxT'];
     const rootDir = 'D:/root';
 
-    const folderPaths = await this.reportService.readRoot(rootDir);
-
+    const folderPaths = await this.aasService.readRoot(rootDir);
+    // const folderPaths = [{ folder_dir: 'R:/test', device: 'MAY AAS' }];
     const promises = [];
     folderPaths.forEach((item: any) => {
-      const promise = this.reportService.readFileContents(item);
+      const promise = this.aasService.readFileContents(item);
       promises.push(promise);
     });
     await Promise.all(promises)
       .then(() => console.log('All shortcuts had read!'))
       .catch((error) => console.error(error));
 
-    // Theo dõi sự thay đổi trong thư mục và cập nhật nội dung của các tệp tin .txt
     const eventSubject = new Subject();
     folderPaths.forEach((data: any) => {
       this.watcherChokidar.watcherChokidar(data);
@@ -76,13 +49,12 @@ export class ReadReportModule {
 
     eventSubject.pipe(debounceTime(1000)).subscribe((event: any) => {
       const pathEdit = event.path.replace(/\\/g, '/');
-      this.reportService.readFileContents({
+      this.aasService.readFileContents({
         folder_dir: pathEdit,
         device: event.device,
       });
     });
 
-    // // //Doc lai file loi
     const intervalInMilliseconds = 15 * 60 * 1000;
     setInterval(async () => {
       const promisesErrorDir = [];
@@ -96,10 +68,10 @@ export class ReadReportModule {
           this.watcherChokidar.watcherChokidar(data);
         });
       }
-      if (this.reportService.errorDir.length > 0) {
-        console.log('errorDir', this.reportService.errorDir);
-        this.reportService.errorDir.forEach((data) => {
-          const promise = this.reportService.readFileContents(data);
+      if (this.aasService.errorDir.length > 0) {
+        console.log('errorDir', this.aasService.errorDir);
+        this.aasService.errorDir.forEach((data) => {
+          const promise = this.aasService.readFileContents(data);
           promisesErrorDir.push(promise);
         });
         await Promise.all(promisesErrorDir).catch((error) =>

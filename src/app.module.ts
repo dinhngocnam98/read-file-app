@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { ReadReportModule } from './read-report/read-report.module';
 import Config from './common/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongoDbConfig } from './common/config.interface';
+import { AasModule } from './aas/aas.module';
+import { UvModule } from './uv/uv.module';
 
 @Module({
   imports: [
@@ -20,7 +20,9 @@ import { MongoDbConfig } from './common/config.interface';
       }),
       inject: [ConfigService],
     }),
+    UvModule,
     ReadReportModule,
+    AasModule,
   ],
   controllers: [],
   providers: [],
