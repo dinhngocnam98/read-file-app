@@ -9,8 +9,6 @@ import { Gc4_report } from '../schemas/gc4_report.schema';
 import { Gc3_report } from '../schemas/gc3_report.schema';
 import { Gc2_report } from '../schemas/gc2_report.schema';
 import { Gc1_report } from '../schemas/gc1_report.schema';
-import { Uv1800_report } from '../schemas/uv1800_report.schema';
-import { Uv2600_report } from '../schemas/uv2600_report.schema';
 import { Hplc_report } from '../schemas/hplc_report.schema';
 
 @Injectable()
@@ -134,6 +132,9 @@ export class ReadReportService {
           break;
         case data.device.toUpperCase().includes('GC 1'):
           await this.Gc1_reportModel.create(result);
+          break;
+          case data.device.toUpperCase().includes('HPLC'):
+          await this.Hplc_reportModel.create(result);
           break;
         default:
           throw new Error('Invalid folder for database');
