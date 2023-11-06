@@ -51,15 +51,14 @@ export class ReadReportModule {
     // const rootDir = ['../testTxT'];
     const rootDir = 'D:/root';
 
-    const folderPaths = await this.reportService.readRoot(rootDir);
-
+    const folderPaths = await this.reportService.readRoot(rootDir);    
     const promises = [];
     folderPaths.forEach((item: any) => {
       const promise = this.reportService.readFileContents(item);
       promises.push(promise);
     });
     await Promise.all(promises)
-      .then(() => console.log('All shortcuts had read!'))
+      .then(() => console.log('Report had read all shortcuts!'))
       .catch((error) => console.error(error));
 
     // Theo dõi sự thay đổi trong thư mục và cập nhật nội dung của các tệp tin .txt

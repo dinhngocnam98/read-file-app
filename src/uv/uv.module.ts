@@ -42,7 +42,7 @@ export class UvModule {
       promises.push(promise);
     });
     await Promise.all(promises)
-      .then(() => console.log('All shortcuts had read!'))
+      .then(() => console.log('May UV had read all shortcuts'))
       .catch((error) => console.error(error));
 
     const eventSubject = new Subject();

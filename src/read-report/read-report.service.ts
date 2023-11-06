@@ -115,7 +115,7 @@ export class ReadReportService {
       folder_dir: data.folder_dir,
       signal_1: signalData1,
       signal_2: signalData2,
-    };
+    };    
     try {
       switch (true) {
         case data.device.toUpperCase().includes('GC 5'):

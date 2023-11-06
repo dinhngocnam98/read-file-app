@@ -33,7 +33,7 @@ export class AasModule {
       promises.push(promise);
     });
     await Promise.all(promises)
-      .then(() => console.log('All shortcuts had read!'))
+      .then(() => console.log('May AAS had read all shortcuts'))
       .catch((error) => console.error(error));
 
     const eventSubject = new Subject();
