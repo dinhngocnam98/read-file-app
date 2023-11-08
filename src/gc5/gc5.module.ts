@@ -11,7 +11,7 @@ import { Gc5Service } from './gc5.service';
       {
         name: Gc5_report.name,
         schema: Gc5_reportSchema,
-      }
+      },
     ]),
   ],
   providers: [Gc5Service, watcherChokidar],
@@ -25,7 +25,7 @@ export class Gc5Module {
     // const rootDir = ['../testTxT'];
     const rootDir = 'D:/root';
 
-    const folderPaths = await this.Gc5Service.readRoot(rootDir);    
+    const folderPaths = await this.Gc5Service.readRoot(rootDir);
     const promises = [];
     folderPaths.forEach((item: any) => {
       const promise = this.Gc5Service.readFileContents(item);

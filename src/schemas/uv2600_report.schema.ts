@@ -14,10 +14,13 @@ export class Uv2600_report {
   @Prop()
   data_lab: object[];
 
-  @Prop({default: Date.now})
+  @Prop()
+  date: Date;
+
+  @Prop({ default: Date.now })
   created_at: Date;
 
-  @Prop({default: Date.now, set: (date: Date) => date || Date.now()})
+  @Prop({ default: Date.now, set: (date: Date) => date || Date.now() })
   updated_at: Date;
 }
 

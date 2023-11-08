@@ -11,7 +11,7 @@ import { Gc3Service } from './gc3.service';
       {
         name: Gc3_report.name,
         schema: Gc3_reportSchema,
-      }
+      },
     ]),
   ],
   providers: [Gc3Service, watcherChokidar],
@@ -25,7 +25,7 @@ export class Gc3Module {
     // const rootDir = ['../testTxT'];
     const rootDir = 'D:/root';
 
-    const folderPaths = await this.Gc3Service.readRoot(rootDir);    
+    const folderPaths = await this.Gc3Service.readRoot(rootDir);
     const promises = [];
     folderPaths.forEach((item: any) => {
       const promise = this.Gc3Service.readFileContents(item);

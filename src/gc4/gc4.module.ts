@@ -11,7 +11,7 @@ import { Gc4Service } from './gc4.service';
       {
         name: Gc4_report.name,
         schema: Gc4_reportSchema,
-      }
+      },
     ]),
   ],
   providers: [Gc4Service, watcherChokidar],
@@ -25,7 +25,7 @@ export class Gc4Module {
     // const rootDir = ['../testTxT'];
     const rootDir = 'D:/root';
 
-    const folderPaths = await this.Gc4Service.readRoot(rootDir);    
+    const folderPaths = await this.Gc4Service.readRoot(rootDir);
     const promises = [];
     folderPaths.forEach((item: any) => {
       const promise = this.Gc4Service.readFileContents(item);

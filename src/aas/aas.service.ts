@@ -41,7 +41,7 @@ export class AasService {
           !file.toUpperCase().includes('SAVED')
         ) {
           await this.readAasTXT(data, file);
-        } else if(!file.includes('.')) {
+        } else if (!file.includes('.')) {
           const newFolderPath = {
             folder_dir: data.folder_dir + '/' + file,
             device: data.device,
@@ -80,23 +80,25 @@ export class AasService {
 
   private async readAasTXT(data: any, file: string) {
     const filePath = `${data.folder_dir}/${file}`;
+    const stats = fs.statSync(filePath);
     const contents = await this.extractData(filePath);
-    const isSaved = await this.saveAasDb(contents, data, filePath);
+    const isSaved = await this.saveAasDb(contents, stats.mtime, data, filePath);
     if (isSaved) {
-        const newFile = file
-          .toLowerCase()
-          .replace('.txt', '_saved.txt')
-          .toUpperCase();
-        fs.rename(`${data.folder_dir}/${file}`, `${data.folder_dir}/${newFile}`);
-      }
+      const newFile = file
+        .toLowerCase()
+        .replace('.txt', '_saved.txt')
+        .toUpperCase();
+      fs.rename(`${data.folder_dir}/${file}`, `${data.folder_dir}/${newFile}`);
+    }
   }
 
-  async saveAasDb(contents: any, data: any, filePath: string) {
+  async saveAasDb(contents: any, date: Date, data: any, filePath: string) {
     const result = {
       folder_dir: data.folder_dir,
       file_path: filePath,
       chemical_symbol: contents.chemical_symbol,
       data_lab: contents.data_lab,
+      date: date,
     };
     try {
       switch (true) {

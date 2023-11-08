@@ -25,10 +25,8 @@ export class Gc2Module {
     // const rootDir = ['../testTxT'];
     const rootDir = 'D:/root';
 
-    // const folderPaths = await this.Gc2Service.readRoot(rootDir);
-    const folderPaths = [
-      { folder_dir: 'X:/test', device: 'MAY GC 2' },
-    ];
+    const folderPaths = await this.Gc2Service.readRoot(rootDir);
+    // const folderPaths = [{ folder_dir: 'D:/test', device: 'MAY GC 2' }];
 
     const promises = [];
     folderPaths.forEach((item: any) => {

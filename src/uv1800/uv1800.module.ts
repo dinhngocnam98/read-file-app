@@ -6,7 +6,6 @@ import {
 import { MongooseModule } from '@nestjs/mongoose';
 import { Subject, debounceTime } from 'rxjs';
 import { watcherChokidar } from 'src/common/watcher';
-import { Uv2600_report, Uv2600_reportSchema } from 'src/schemas/uv2600_report.schema';
 import { Uv1800Service } from './uv1800.service';
 
 @Module({
@@ -15,7 +14,7 @@ import { Uv1800Service } from './uv1800.service';
       {
         name: Uv1800_report.name,
         schema: Uv1800_reportSchema,
-      }
+      },
     ]),
   ],
   providers: [Uv1800Service, watcherChokidar],

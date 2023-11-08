@@ -15,7 +15,7 @@ export class Gc4Service {
 
   async readFileContents(data: any) {
     const shortcuts = await this.readShortcuts(data);
-    
+
     if (shortcuts && shortcuts.length > 0) {
       for (const file of shortcuts) {
         if (
@@ -25,7 +25,7 @@ export class Gc4Service {
           !file.toUpperCase().includes('SAVED')
         ) {
           await this.readReport(data, file);
-        } else if(!file.includes('.')) {
+        } else if (!file.includes('.')) {
           const newFolderPath = {
             folder_dir: data.folder_dir + '/' + file,
             device: data.device,
@@ -83,7 +83,8 @@ export class Gc4Service {
   private async readReport(data: any, file: string) {
     const filePath = `${data.folder_dir}/${file}`;
     const contents = await this.extractSignalData(filePath);
-    const isSaved = await this.saveReportDb(contents, data);
+    const stats = fs.statSync(filePath);
+    const isSaved = await this.saveReportDb(contents, stats.mtime, data);
     if (isSaved) {
       const newFile = file
         .toLowerCase()
@@ -94,7 +95,7 @@ export class Gc4Service {
   }
 
   // Lưu dữ liệu vào database
-  async saveReportDb(contents: any[], data: any) {
+  async saveReportDb(contents: any[], date: Date, data: any) {
     const signalData1 = [];
     const signalData2 = [];
     for (const content of contents) {
@@ -106,7 +107,8 @@ export class Gc4Service {
       folder_dir: data.folder_dir,
       signal_1: signalData1,
       signal_2: signalData2,
-    };    
+      date: date,
+    };
     try {
       switch (true) {
         case data.device.toUpperCase().includes('GC 4'):

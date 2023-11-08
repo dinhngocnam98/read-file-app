@@ -43,7 +43,7 @@ export class Uv1800Service {
           !file.toUpperCase().includes('SAVED')
         ) {
           await this.readUv1800TXT(data, file);
-        } else if(!file.includes('.')) {
+        } else if (!file.includes('.')) {
           const newFolderPath = {
             folder_dir: data.folder_dir + '/' + file,
             device: data.device,
@@ -83,8 +83,8 @@ export class Uv1800Service {
   private async readUv1800TXT(data: any, file: string) {
     const filePath = `${data.folder_dir}/${file}`;
     const contents = await this.extractData(filePath);
-    
-    const isSaved = await this.saveAasDb(contents, data, filePath);
+    const stats = fs.statSync(filePath);
+    const isSaved = await this.saveAasDb(contents, stats.mtime, data, filePath);
     if (isSaved) {
       const newFile = file
         .toLowerCase()
@@ -94,11 +94,12 @@ export class Uv1800Service {
     }
   }
 
-  async saveAasDb(contents: any, data: any, filePath: string) {
+  async saveAasDb(contents: any, date: Date, data: any, filePath: string) {
     const result = {
       folder_dir: data.folder_dir,
       file_path: filePath,
       data_lab: contents.data_lab,
+      date: date,
     };
     try {
       switch (true) {
@@ -132,13 +133,13 @@ export class Uv1800Service {
 
     const header = lines[0].split(',');
     const name = header[header.length - 2].replace(/"/g, '').trim();
-    const nameProp = name.replace('.0', '')
+    const nameProp = name.replace('.0', '');
 
     const entries = lines.slice(1).map((row) => {
       const rowSplit = row
         .split(',')
         .map((value) => value.replace(/"/g, '').trim());
-      
+
       const [SampleId, Type, Conc, value, Comments] = rowSplit;
       const result = {
         Sample_id: SampleId,
@@ -147,9 +148,9 @@ export class Uv1800Service {
         Name: name,
         Comments: Comments,
       };
-      result[nameProp] = value
+      result[nameProp] = value;
 
-      return result
+      return result;
     });
     parsedData.push(...entries);
     return {

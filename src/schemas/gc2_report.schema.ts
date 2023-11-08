@@ -8,16 +8,16 @@ export class Gc2_report {
   @Prop()
   folder_dir: string;
 
-  @Prop()
-  signal_1: object[];
+  @Prop({ type: Object })
+  data: any;
 
   @Prop()
-  signal_2: object[];
+  date: Date;
 
-  @Prop({default: Date.now})
+  @Prop({ default: Date.now })
   created_at: Date;
 
-  @Prop({default: Date.now, set: (date: Date) => date || Date.now()})
+  @Prop({ default: Date.now, set: (date: Date) => date || Date.now() })
   updated_at: Date;
 }
 

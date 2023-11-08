@@ -30,7 +30,7 @@ export class HplcModule {
     // const rootDir = ['../testTxT'];
     const rootDir = 'D:/root';
 
-    const folderPaths = await this.HplcService.readRoot(rootDir);    
+    const folderPaths = await this.HplcService.readRoot(rootDir);
     const promises = [];
     folderPaths.forEach((item: any) => {
       const promise = this.HplcService.readFileContents(item);

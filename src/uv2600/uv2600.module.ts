@@ -3,7 +3,10 @@ import { Uv2600Service } from './uv2600.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Subject, debounceTime } from 'rxjs';
 import { watcherChokidar } from 'src/common/watcher';
-import { Uv2600_report, Uv2600_reportSchema } from 'src/schemas/uv2600_report.schema';
+import {
+  Uv2600_report,
+  Uv2600_reportSchema,
+} from 'src/schemas/uv2600_report.schema';
 
 @Module({
   imports: [
@@ -51,7 +54,7 @@ export class Uv2600Module {
     eventSubject.pipe(debounceTime(1000)).subscribe((event: any) => {
       const pathEdit = event.path.replace(/\\/g, '/');
       console.log(pathEdit);
-      
+
       this.Uv2600Service.readFileContents({
         folder_dir: pathEdit,
         device: event.device,
