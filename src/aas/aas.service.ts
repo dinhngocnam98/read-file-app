@@ -41,7 +41,7 @@ export class AasService {
           !file.toUpperCase().includes('SAVED')
         ) {
           await this.readAasTXT(data, file);
-        } else {
+        } else if(!file.includes('.')) {
           const newFolderPath = {
             folder_dir: data.folder_dir + '/' + file,
             device: data.device,

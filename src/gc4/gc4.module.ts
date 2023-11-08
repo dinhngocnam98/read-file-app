@@ -1,41 +1,41 @@
 import { Module } from '@nestjs/common';
-import { AasService } from './aas.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Aas_report, Aas_reportSchema } from 'src/schemas/aas_report.schema';
+import { Gc4_report, Gc4_reportSchema } from '../schemas/gc4_report.schema';
 import { Subject, debounceTime } from 'rxjs';
 import { watcherChokidar } from 'src/common/watcher';
+import { Gc4Service } from './gc4.service';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       {
-        name: Aas_report.name,
-        schema: Aas_reportSchema,
-      },
+        name: Gc4_report.name,
+        schema: Gc4_reportSchema,
+      }
     ]),
   ],
-  providers: [AasService, watcherChokidar],
+  providers: [Gc4Service, watcherChokidar],
 })
-export class AasModule {
+export class Gc4Module {
   constructor(
-    private aasService: AasService,
+    private Gc4Service: Gc4Service,
     private watcherChokidar: watcherChokidar,
   ) {}
-
   async onApplicationBootstrap() {
+    // const rootDir = ['../testTxT'];
     const rootDir = 'D:/root';
 
-    const folderPaths = await this.aasService.readRoot(rootDir);
-    // const folderPaths = [{ folder_dir: 'R:/test', device: 'MAY AAS' }];
+    const folderPaths = await this.Gc4Service.readRoot(rootDir);    
     const promises = [];
     folderPaths.forEach((item: any) => {
-      const promise = this.aasService.readFileContents(item);
+      const promise = this.Gc4Service.readFileContents(item);
       promises.push(promise);
     });
     await Promise.all(promises)
-      .then(() => console.log('May AAS had read all shortcuts'))
+      .then(() => console.log('May GC 4 had read all shortcuts!'))
       .catch((error) => console.error(error));
 
+    // Theo dõi sự thay đổi trong thư mục và cập nhật nội dung của các tệp tin .txt
     const eventSubject = new Subject();
     folderPaths.forEach((data: any) => {
       this.watcherChokidar.watcherChokidar(data);
@@ -49,29 +49,30 @@ export class AasModule {
 
     eventSubject.pipe(debounceTime(1000)).subscribe((event: any) => {
       const pathEdit = event.path.replace(/\\/g, '/');
-      this.aasService.readFileContents({
+      this.Gc4Service.readFileContents({
         folder_dir: pathEdit,
         device: event.device,
       });
     });
 
+    // // //Doc lai file loi
     const intervalInMilliseconds = 15 * 60 * 1000;
     setInterval(async () => {
       const promisesErrorDir = [];
 
       if (this.watcherChokidar.errorFolderWatchers.length > 0) {
         console.log(
-          'May AAS has errorFolderWatchers',
+          'may GC 4 has errorFolderWatchers',
           this.watcherChokidar.errorFolderWatchers,
         );
         this.watcherChokidar.errorFolderWatchers.forEach((data) => {
           this.watcherChokidar.watcherChokidar(data);
         });
       }
-      if (this.aasService.errorDir.length > 0) {
-        console.log('May AAS has errorDir', this.aasService.errorDir);
-        this.aasService.errorDir.forEach((data) => {
-          const promise = this.aasService.readFileContents(data);
+      if (this.Gc4Service.errorDir.length > 0) {
+        console.log('may GC 4 has errorDir', this.Gc4Service.errorDir);
+        this.Gc4Service.errorDir.forEach((data) => {
+          const promise = this.Gc4Service.readFileContents(data);
           promisesErrorDir.push(promise);
         });
         await Promise.all(promisesErrorDir).catch((error) =>

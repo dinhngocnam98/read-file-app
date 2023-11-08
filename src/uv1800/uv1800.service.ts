@@ -4,21 +4,20 @@ import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import * as fs from 'fs-extra';
 import * as getWinShortcut from 'get-windows-shortcut-properties';
-import { Uv2600_report } from 'src/schemas/uv2600_report.schema';
 
 @Injectable()
-export class UvService {
+export class Uv1800Service {
   constructor(
     @InjectModel(Uv1800_report.name)
     private Uv1800_reportModel: Model<Uv1800_report>,
-    @InjectModel(Uv2600_report.name)
-    private Uv2600_reportModel: Model<Uv2600_report>,
   ) {}
   errorDir: any[] = [];
 
   async readRoot(dir: string) {
     const rootInfo = fs.readdirSync(dir);
-    const rootFilter = rootInfo.filter((item: string) => item.includes('UV'));
+    const rootFilter = rootInfo.filter((item: string) =>
+      item.includes('UV 1800'),
+    );
     return rootFilter.map((item: string) => {
       if (item.split('.').pop() === 'lnk') {
         const shortcutInfo = getWinShortcut.sync(dir + '/' + item);
@@ -44,7 +43,7 @@ export class UvService {
           !file.toUpperCase().includes('SAVED')
         ) {
           await this.readUv1800TXT(data, file);
-        } else {
+        } else if(!file.includes('.')) {
           const newFolderPath = {
             folder_dir: data.folder_dir + '/' + file,
             device: data.device,
@@ -84,6 +83,7 @@ export class UvService {
   private async readUv1800TXT(data: any, file: string) {
     const filePath = `${data.folder_dir}/${file}`;
     const contents = await this.extractData(filePath);
+    
     const isSaved = await this.saveAasDb(contents, data, filePath);
     if (isSaved) {
       const newFile = file
@@ -104,9 +104,6 @@ export class UvService {
       switch (true) {
         case data.device.toUpperCase().includes('UV 1800'):
           await this.Uv1800_reportModel.create(result);
-          break;
-        case data.device.toUpperCase().includes('UV 2600'):
-          await this.Uv2600_reportModel.create(result);
           break;
         default:
           throw new Error('Invalid folder for database');
@@ -133,19 +130,26 @@ export class UvService {
       .split('\n')
       .map((line) => line.trim());
 
+    const header = lines[0].split(',');
+    const name = header[header.length - 2].replace(/"/g, '').trim();
+    const nameProp = name.replace('.0', '')
+
     const entries = lines.slice(1).map((row) => {
       const rowSplit = row
         .split(',')
         .map((value) => value.replace(/"/g, '').trim());
-
-      const [SampleId, Type, Conc, WL425, Comments] = rowSplit;
-      return {
+      
+      const [SampleId, Type, Conc, value, Comments] = rowSplit;
+      const result = {
         Sample_id: SampleId,
         Type: Type,
         Conc: parseFloat(Conc) || null,
-        WL425: parseFloat(WL425) || null,
+        Name: name,
         Comments: Comments,
       };
+      result[nameProp] = value
+
+      return result
     });
     parsedData.push(...entries);
     return {

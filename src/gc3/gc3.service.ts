@@ -4,22 +4,12 @@ import * as iconv from 'iconv-lite';
 import * as getWinShortcut from 'get-windows-shortcut-properties';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { Gc5_report } from '../schemas/gc5_report.schema';
-import { Gc4_report } from '../schemas/gc4_report.schema';
 import { Gc3_report } from '../schemas/gc3_report.schema';
-import { Gc2_report } from '../schemas/gc2_report.schema';
-import { Gc1_report } from '../schemas/gc1_report.schema';
-import { Hplc_report } from '../schemas/hplc_report.schema';
 
 @Injectable()
-export class ReadReportService {
+export class Gc3Service {
   constructor(
-    @InjectModel(Gc5_report.name) private Gc5_reportModel: Model<Gc5_report>,
-    @InjectModel(Gc4_report.name) private Gc4_reportModel: Model<Gc4_report>,
     @InjectModel(Gc3_report.name) private Gc3_reportModel: Model<Gc3_report>,
-    @InjectModel(Gc2_report.name) private Gc2_reportModel: Model<Gc2_report>,
-    @InjectModel(Gc1_report.name) private Gc1_reportModel: Model<Gc1_report>,
-    @InjectModel(Hplc_report.name) private Hplc_reportModel: Model<Hplc_report>,
   ) {}
   errorDir: any[] = [];
 
@@ -34,7 +24,7 @@ export class ReadReportService {
           !file.toUpperCase().includes('SAVED')
         ) {
           await this.readReport(data, file);
-        } else {
+        } else if(!file.includes('.')) {
           const newFolderPath = {
             folder_dir: data.folder_dir + '/' + file,
             device: data.device,
@@ -47,7 +37,7 @@ export class ReadReportService {
 
   async readRoot(dir: string) {
     const rootInfo = fs.readdirSync(dir);
-    const rootFilter = rootInfo.filter((item) => item.includes('GC') || item.includes('HPLC'));
+    const rootFilter = rootInfo.filter((item) => item.includes('GC 3'));
     return rootFilter.map((item: string) => {
       if (item.split('.').pop() === 'lnk') {
         const shortcutInfo = getWinShortcut.sync(dir + '/' + item);
@@ -118,23 +108,8 @@ export class ReadReportService {
     };    
     try {
       switch (true) {
-        case data.device.toUpperCase().includes('GC 5'):
-          await this.Gc5_reportModel.create(result);
-          break;
-        case data.device.toUpperCase().includes('GC 4'):
-          await this.Gc4_reportModel.create(result);
-          break;
         case data.device.toUpperCase().includes('GC 3'):
           await this.Gc3_reportModel.create(result);
-          break;
-        case data.device.toUpperCase().includes('GC 2'):
-          await this.Gc2_reportModel.create(result);
-          break;
-        case data.device.toUpperCase().includes('GC 1'):
-          await this.Gc1_reportModel.create(result);
-          break;
-          case data.device.toUpperCase().includes('HPLC'):
-          await this.Hplc_reportModel.create(result);
           break;
         default:
           throw new Error('Invalid folder for database');
