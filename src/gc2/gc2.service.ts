@@ -15,15 +15,18 @@ export class Gc2Service {
   errorDir: any[] = [];
 
   async readFileContents(data: any) {
+    console.log(data.device + '->' + data.folder_dir);
+
     const shortcuts = await this.readShortcuts(data);
     if (shortcuts && shortcuts.length > 0) {
       for (const file of shortcuts) {
         if (
           file.toUpperCase().endsWith('.TXT') &&
+          file.toUpperCase().includes('ACQ') &&
           !file.toUpperCase().includes('SAVED')
         ) {
           await this.readReport(data, file);
-        } else if (!file.includes('.')) {
+        } else if(!file.includes('.') || file.toUpperCase().endsWith('.D')) {
           const newFolderPath = {
             folder_dir: data.folder_dir + '/' + file,
             device: data.device,

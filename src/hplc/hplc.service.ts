@@ -14,7 +14,11 @@ export class HplcService {
   errorDir: any[] = [];
 
   async readFileContents(data: any) {
+    console.log(data.folder_dir);
+    
     const shortcuts = await this.readShortcuts(data);
+    console.log(data.device + '->' + data.folder_dir);
+
     if (shortcuts && shortcuts.length > 0) {
       for (const file of shortcuts) {
         if (
@@ -24,7 +28,7 @@ export class HplcService {
           !file.toUpperCase().includes('SAVED')
         ) {
           await this.readReport(data, file);
-        } else if (!file.includes('.')) {
+        } else if(!file.includes('.') || file.toUpperCase().endsWith('.D')){
           const newFolderPath = {
             folder_dir: data.folder_dir + '/' + file,
             device: data.device,

@@ -35,6 +35,7 @@ export class Uv2600Service {
   }
 
   async readFileContents(data: any) {
+    console.log(data.device + '->' + data.folder_dir);
     const shortcuts = await this.readShortcuts(data);
     if (shortcuts && shortcuts.length > 0) {
       for (const file of shortcuts) {
@@ -43,7 +44,7 @@ export class Uv2600Service {
           !file.toUpperCase().includes('SAVED')
         ) {
           await this.readUv1800TXT(data, file);
-        } else if (!file.includes('.')) {
+        } else if(!file.includes('.') || file.toUpperCase().endsWith('.D')){
           const newFolderPath = {
             folder_dir: data.folder_dir + '/' + file,
             device: data.device,
