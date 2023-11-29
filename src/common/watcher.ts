@@ -10,7 +10,6 @@ export class watcherChokidar {
       persistent: true,
       usePolling: true,
       ignoreInitial: true,
-      depth: 3,
     });
 
     watcher.on('error', (error) => {

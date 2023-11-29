@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import * as fs from 'fs-extra';
 import * as iconv from 'iconv-lite';
 import * as getWinShortcut from 'get-windows-shortcut-properties';
@@ -11,9 +11,36 @@ export class Gc3Service {
   constructor(
     @InjectModel(Gc3_report.name) private Gc3_reportModel: Model<Gc3_report>,
   ) {}
+
   errorDir: any[] = [];
+  logger = new Logger('MAY GC 3');
 
   async readFileContents(data: any) {
+    this.logger.log('Read folder: ' + data.folder_dir);
+    // if (data.folder_dir.toUpperCase().endsWith('.TXT')) {
+    //   const lastSlashIndex = data.folder_dir.lastIndexOf('/');
+    //   const directoryUrl =
+    //     lastSlashIndex !== -1
+    //       ? data.folder_dir.substring(0, lastSlashIndex)
+    //       : data.folder_dir;
+    //   const file =
+    //     lastSlashIndex !== -1
+    //       ? data.folder_dir.substring(lastSlashIndex + 1)
+    //       : '';
+    //   const newData = {
+    //     folder_dir: directoryUrl,
+    //     device: data.device,
+    //   };
+    //   if (
+    //     file.toUpperCase().endsWith('.TXT') &&
+    //     file.toUpperCase().includes('REPORT') &&
+    //     !file.toUpperCase().includes('IRREPORT') &&
+    //     !file.toUpperCase().includes('SAVED')
+    //   ) {
+    //     await this.readReport(newData, file);
+    //   }
+    // }
+
     const shortcuts = await this.readShortcuts(data);
     if (shortcuts && shortcuts.length > 0) {
       for (const file of shortcuts) {
@@ -24,7 +51,7 @@ export class Gc3Service {
           !file.toUpperCase().includes('SAVED')
         ) {
           await this.readReport(data, file);
-        } else if (!file.includes('.')) {
+        } else if (!file.includes('.') || file.toUpperCase().endsWith('.D')) {
           const newFolderPath = {
             folder_dir: data.folder_dir + '/' + file,
             device: data.device,
@@ -79,6 +106,7 @@ export class Gc3Service {
       }
     }
   }
+
   private async readReport(data: any, file: string) {
     const filePath = `${data.folder_dir}/${file}`;
     const contents = await this.extractSignalData(filePath);
