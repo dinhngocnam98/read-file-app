@@ -1,52 +1,23 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import * as fs from 'fs-extra';
 import * as iconv from 'iconv-lite';
 import * as getWinShortcut from 'get-windows-shortcut-properties';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { Gc3_report } from '../schemas/gc3_report.schema';
+import { Gc4_report } from '../schemas/gc4_report.schema';
 
 @Injectable()
-export class Gc3Service {
+export class Gc4Service {
   constructor(
-    @InjectModel(Gc3_report.name) private Gc3_reportModel: Model<Gc3_report>,
+    @InjectModel(Gc4_report.name) private Gc4_reportModel: Model<Gc4_report>,
   ) {}
-
   errorDir: any[] = [];
-  logger = new Logger('MAY GC 3');
 
   async readFileContents(data: any) {
-<<<<<<< HEAD
-    this.logger.log('Read folder: ' + data.folder_dir);
-    // if (data.folder_dir.toUpperCase().endsWith('.TXT')) {
-    //   const lastSlashIndex = data.folder_dir.lastIndexOf('/');
-    //   const directoryUrl =
-    //     lastSlashIndex !== -1
-    //       ? data.folder_dir.substring(0, lastSlashIndex)
-    //       : data.folder_dir;
-    //   const file =
-    //     lastSlashIndex !== -1
-    //       ? data.folder_dir.substring(lastSlashIndex + 1)
-    //       : '';
-    //   const newData = {
-    //     folder_dir: directoryUrl,
-    //     device: data.device,
-    //   };
-    //   if (
-    //     file.toUpperCase().endsWith('.TXT') &&
-    //     file.toUpperCase().includes('REPORT') &&
-    //     !file.toUpperCase().includes('IRREPORT') &&
-    //     !file.toUpperCase().includes('SAVED')
-    //   ) {
-    //     await this.readReport(newData, file);
-    //   }
-    // }
-
-=======
     console.log(data.device + '->' + data.folder_dir);
-    
->>>>>>> e753892f85c410370f9b0a25af20bb574e5069a5
+
     const shortcuts = await this.readShortcuts(data);
+
     if (shortcuts && shortcuts.length > 0) {
       for (const file of shortcuts) {
         if (
@@ -56,11 +27,7 @@ export class Gc3Service {
           !file.toUpperCase().includes('SAVED')
         ) {
           await this.readReport(data, file);
-<<<<<<< HEAD
-        } else if (!file.includes('.') || file.toUpperCase().endsWith('.D')) {
-=======
         } else if(!file.includes('.') || file.toUpperCase().endsWith('.D')) {
->>>>>>> e753892f85c410370f9b0a25af20bb574e5069a5
           const newFolderPath = {
             folder_dir: data.folder_dir + '/' + file,
             device: data.device,
@@ -73,7 +40,7 @@ export class Gc3Service {
 
   async readRoot(dir: string) {
     const rootInfo = fs.readdirSync(dir);
-    const rootFilter = rootInfo.filter((item) => item.includes('GC 3'));
+    const rootFilter = rootInfo.filter((item) => item.includes('GC 4'));
     return rootFilter.map((item: string) => {
       if (item.split('.').pop() === 'lnk') {
         const shortcutInfo = getWinShortcut.sync(dir + '/' + item);
@@ -115,7 +82,6 @@ export class Gc3Service {
       }
     }
   }
-
   private async readReport(data: any, file: string) {
     const filePath = `${data.folder_dir}/${file}`;
     const contents = await this.extractSignalData(filePath);
@@ -147,8 +113,8 @@ export class Gc3Service {
     };
     try {
       switch (true) {
-        case data.device.toUpperCase().includes('GC 3'):
-          await this.Gc3_reportModel.create(result);
+        case data.device.toUpperCase().includes('GC 4'):
+          await this.Gc4_reportModel.create(result);
           break;
         default:
           throw new Error('Invalid folder for database');
