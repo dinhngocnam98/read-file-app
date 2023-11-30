@@ -29,7 +29,7 @@ export class Gc3Module {
 
     // const folderPaths = await this.Gc3Service.readRoot(rootDir);
     const promises = [];
-    const folderPaths = [{ folder_dir: 'D:/code/2023', device: 'MAY GC 3' }];
+    const folderPaths = [{ folder_dir: 'D:/Data', device: 'MAY GC 3' }];
     folderPaths.forEach((item: any) => {
       const promise = this.Gc3Service.readFileContents(item);
       promises.push(promise);
@@ -52,10 +52,17 @@ export class Gc3Module {
           device: data.device,
         });
       });
+      data.watcher.on('add', (path: string) => {
+        eventSubject.next({
+          event: 'add',
+          path: path,
+          device: data.device,
+        });
+      });
+      
     });
     eventSubject.pipe(debounceTime(1000)).subscribe((event: any) => {
       logger.log(event.event, event.path);
-
       let pathEdit = event.path.replace(/\\/g, '/');
       if (pathEdit.toUpperCase().endsWith('DA.M')) {
         const lastSlashIndex = pathEdit.lastIndexOf('/');
