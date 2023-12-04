@@ -40,23 +40,24 @@ export class Gc3Service {
         await this.readReport(newData, file);
       }
     }
-
-    const shortcuts = await this.readShortcuts(data);
-    if (shortcuts && shortcuts.length > 0) {
-      for (const file of shortcuts) {
-        if (
-          file.toUpperCase().endsWith('.TXT') &&
-          file.toUpperCase().includes('REPORT') &&
-          !file.toUpperCase().includes('IRREPORT') &&
-          !file.toUpperCase().includes('SAVED')
-        ) {
-          await this.readReport(data, file);
-        } else if(!file.includes('.') || file.toUpperCase().endsWith('.D')) {
-          const newFolderPath = {
-            folder_dir: data.folder_dir + '/' + file,
-            device: data.device,
-          };
-          await this.readFileContents(newFolderPath);
+    else{
+      const shortcuts = await this.readShortcuts(data);
+      if (shortcuts && shortcuts.length > 0) {
+        for (const file of shortcuts) {
+          if (
+            file.toUpperCase().endsWith('.TXT') &&
+            file.toUpperCase().includes('REPORT') &&
+            !file.toUpperCase().includes('IRREPORT') &&
+            !file.toUpperCase().includes('SAVED')
+          ) {
+            await this.readReport(data, file);
+          } else if(!file.includes('.') || file.toUpperCase().endsWith('.D')) {
+            const newFolderPath = {
+              folder_dir: data.folder_dir + '/' + file,
+              device: data.device,
+            };
+            await this.readFileContents(newFolderPath);
+          }
         }
       }
     }
@@ -139,7 +140,6 @@ export class Gc3Service {
     try {
       switch (true) {
         case data.device.toUpperCase().includes('GC 3'):
-          this.logger.log('Saved to Database')
           await this.Gc3_reportModel.findOneAndUpdate({folder_dir: result.folder_dir}, result,{new: true, upsert: true});
           this.logger.log('Saved to Database')
           break;
