@@ -39,21 +39,23 @@ export class Gc3Module {
       .catch((error) => logger.error(error));
 
     // Theo dõi sự thay đổi trong thư mục và cập nhật nội dung của các tệp tin .txt
-    const eventSubject = new Subject();
+    const eventSubjectAddDir = new Subject();
+    const eventSubjectAdd = new Subject();
+
     folderPaths.forEach((data: any) => {
       this.watcherChokidar.watcherChokidar(data);
     });
 
     this.watcherChokidar.watchers.forEach((data: any) => {
       data.watcher.on('addDir', (path: string) => {
-        eventSubject.next({
+        eventSubjectAddDir.next({
           event: 'addDir',
           path: path,
           device: data.device,
         });
       });
       data.watcher.on('add', (path: string) => {
-        eventSubject.next({
+        eventSubjectAdd.next({
           event: 'add',
           path: path,
           device: data.device,
@@ -61,7 +63,7 @@ export class Gc3Module {
       });
       
     });
-    eventSubject.pipe(debounceTime(1000)).subscribe((event: any) => {
+    eventSubjectAddDir.pipe(debounceTime(1000)).subscribe((event: any) => {
       logger.log(event.event, event.path);
       let pathEdit = event.path.replace(/\\/g, '/');
       if (pathEdit.toUpperCase().endsWith('DA.M')) {
@@ -71,6 +73,14 @@ export class Gc3Module {
             ? pathEdit.substring(0, lastSlashIndex)
             : pathEdit;
       }
+      this.Gc3Service.readFileContents({
+        folder_dir: pathEdit,
+        device: event.device,
+      });
+    });
+    eventSubjectAdd.pipe(debounceTime(2000)).subscribe((event: any) => {
+      logger.log(event.event, event.path);
+      let pathEdit = event.path.replace(/\\/g, '/');
       this.Gc3Service.readFileContents({
         folder_dir: pathEdit,
         device: event.device,
