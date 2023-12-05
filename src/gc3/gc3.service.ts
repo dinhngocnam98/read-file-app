@@ -39,8 +39,7 @@ export class Gc3Service {
       ) {
         await this.readReport(newData, file);
       }
-    }
-    else{
+    } else {
       const shortcuts = await this.readShortcuts(data);
       if (shortcuts && shortcuts.length > 0) {
         for (const file of shortcuts) {
@@ -51,7 +50,7 @@ export class Gc3Service {
             !file.toUpperCase().includes('SAVED')
           ) {
             await this.readReport(data, file);
-          } else if(!file.includes('.') || file.toUpperCase().endsWith('.D')) {
+          } else if (!file.includes('.') || file.toUpperCase().endsWith('.D')) {
             const newFolderPath = {
               folder_dir: data.folder_dir + '/' + file,
               device: data.device,
@@ -140,8 +139,12 @@ export class Gc3Service {
     try {
       switch (true) {
         case data.device.toUpperCase().includes('GC 3'):
-          await this.Gc3_reportModel.findOneAndUpdate({folder_dir: result.folder_dir}, result,{new: true, upsert: true});
-          this.logger.log('Saved to Database')
+          await this.Gc3_reportModel.findOneAndUpdate(
+            { folder_dir: result.folder_dir },
+            result,
+            { new: true, upsert: true },
+          );
+          this.logger.log('Saved to Database');
           break;
         default:
           throw new Error('Invalid folder for database');
@@ -180,7 +183,6 @@ export class Gc3Service {
         .trim()
         .split('\n')
         .map((line) => line.trim());
-
       // Extract name_signal
       const nameSignalMatch = lines[0];
       const name_signal = nameSignalMatch ? nameSignalMatch : '';
@@ -195,6 +197,26 @@ export class Gc3Service {
             name_signal,
             RetTime: parseFloat(RetTime) || null,
             type,
+            Area: parseFloat(Area) || null,
+            Amt_Area: parseFloat(Amt_Area) || null,
+            Norm: parseFloat(Norm) || null,
+            Grp: '',
+            Name,
+          };
+        } else if (rowSplit.length > 6) {
+          const RetTime = rowSplit[0];
+          const Area = rowSplit[rowSplit.length - 4];
+          const Amt_Area = rowSplit[rowSplit.length - 3];
+          const Norm = rowSplit[rowSplit.length - 2];
+          const Name = rowSplit[rowSplit.length - 1];
+          let type = '';
+          for (let i = 1; i < rowSplit.length - 4; i++) {
+            type += rowSplit[i] + ' ';
+          }
+          return {
+            name_signal,
+            RetTime: parseFloat(RetTime) || null,
+            type: type.trim(),
             Area: parseFloat(Area) || null,
             Amt_Area: parseFloat(Amt_Area) || null,
             Norm: parseFloat(Norm) || null,

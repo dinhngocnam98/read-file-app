@@ -23,8 +23,6 @@ export class Gc3Module {
   ) {}
   async onApplicationBootstrap() {
     const logger = new Logger('MAY GC 3');
-
-    // const rootDir = ['../testTxT'];
     // const rootDir = 'D:/root';
 
     // const folderPaths = await this.Gc3Service.readRoot(rootDir);
@@ -61,7 +59,6 @@ export class Gc3Module {
           device: data.device,
         });
       });
-      
     });
     eventSubjectAddDir.pipe(debounceTime(1000)).subscribe((event: any) => {
       logger.log(event.event, event.path);
@@ -80,7 +77,7 @@ export class Gc3Module {
     });
     eventSubjectAdd.pipe(debounceTime(2000)).subscribe((event: any) => {
       logger.log(event.event, event.path);
-      let pathEdit = event.path.replace(/\\/g, '/');
+      const pathEdit = event.path.replace(/\\/g, '/');
       this.Gc3Service.readFileContents({
         folder_dir: pathEdit,
         device: event.device,
