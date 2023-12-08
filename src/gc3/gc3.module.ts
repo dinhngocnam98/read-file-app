@@ -1,7 +1,6 @@
 import { Logger, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Gc3_report, Gc3_reportSchema } from '../schemas/gc3_report.schema';
-import { Subject, debounceTime } from 'rxjs';
 import { watcherChokidar } from 'src/common/watcher';
 import { Gc3Service } from './gc3.service';
 
@@ -37,8 +36,6 @@ export class Gc3Module {
       .catch((error) => logger.error(error));
 
     // Theo dõi sự thay đổi trong thư mục và cập nhật nội dung của các tệp tin .txt
-    const eventSubjectAddDir = new Subject();
-    const eventSubjectAdd = new Subject();
 
     folderPaths.forEach((data: any) => {
       this.watcherChokidar.watcherChokidar(data);
@@ -46,41 +43,27 @@ export class Gc3Module {
 
     this.watcherChokidar.watchers.forEach((data: any) => {
       data.watcher.on('addDir', (path: string) => {
-        eventSubjectAddDir.next({
-          event: 'addDir',
-          path: path,
+        logger.log('addDir: ', path);
+        let pathEdit = path.replace(/\\/g, '/');
+        if (pathEdit.toUpperCase().endsWith('DA.M')) {
+          const lastSlashIndex = pathEdit.lastIndexOf('/');
+          pathEdit =
+            lastSlashIndex !== -1
+              ? pathEdit.substring(0, lastSlashIndex)
+              : pathEdit;
+        }
+        this.Gc3Service.readFileContents({
+          folder_dir: pathEdit,
           device: data.device,
         });
       });
       data.watcher.on('add', (path: string) => {
-        eventSubjectAdd.next({
-          event: 'add',
-          path: path,
+        logger.log('add: ', path);
+        const pathEdit = path.replace(/\\/g, '/');
+        this.Gc3Service.readFileContents({
+          folder_dir: pathEdit,
           device: data.device,
         });
-      });
-    });
-    eventSubjectAddDir.pipe(debounceTime(1000)).subscribe((event: any) => {
-      logger.log(event.event, event.path);
-      let pathEdit = event.path.replace(/\\/g, '/');
-      if (pathEdit.toUpperCase().endsWith('DA.M')) {
-        const lastSlashIndex = pathEdit.lastIndexOf('/');
-        pathEdit =
-          lastSlashIndex !== -1
-            ? pathEdit.substring(0, lastSlashIndex)
-            : pathEdit;
-      }
-      this.Gc3Service.readFileContents({
-        folder_dir: pathEdit,
-        device: event.device,
-      });
-    });
-    eventSubjectAdd.pipe(debounceTime(2000)).subscribe((event: any) => {
-      logger.log(event.event, event.path);
-      const pathEdit = event.path.replace(/\\/g, '/');
-      this.Gc3Service.readFileContents({
-        folder_dir: pathEdit,
-        device: event.device,
       });
     });
 

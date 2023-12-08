@@ -7,6 +7,22 @@ export class watcherChokidar {
 
   watcherChokidar = (data: any) => {
     const watcher = chokidar.watch(data.folder_dir, {
+      ignored: [
+        '**/DA.M',
+        '**/*.macaml',
+        '**/*.REG',
+        '**/*.ch',
+        '**/*.ini',
+        '**/*.PDF',
+        '**/*.LOG',
+        '**/*.acaml',
+        '**/*.XML',
+        '**/*.MTH',
+        '**/*_SAVED.TXT',
+        '**/acq.txt',
+        '**/intermediate.txt',
+        '**/*.bak'
+      ],
       persistent: true,
       usePolling: true,
       ignoreInitial: true,
