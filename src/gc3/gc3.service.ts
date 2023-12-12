@@ -7,13 +7,13 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Gc3_report } from '../schemas/gc3_report.schema';
 
 @Injectable()
-export class Gc3Service {
+export class Gc2Service {
   constructor(
     @InjectModel(Gc3_report.name) private Gc3_reportModel: Model<Gc3_report>,
   ) {}
 
   errorDir: any[] = [];
-  logger = new Logger('MAY GC 3');
+  logger = new Logger('MAY GC 2');
 
   async readFileContents(data: any) {
     this.logger.log('Read folder: ' + data.folder_dir);
@@ -64,7 +64,7 @@ export class Gc3Service {
 
   async readRoot(dir: string) {
     const rootInfo = fs.readdirSync(dir);
-    const rootFilter = rootInfo.filter((item) => item.includes('GC 3'));
+    const rootFilter = rootInfo.filter((item) => item.includes('GC 2'));
     return rootFilter.map((item: string) => {
       if (item.split('.').pop() === 'lnk') {
         const shortcutInfo = getWinShortcut.sync(dir + '/' + item);
@@ -122,18 +122,21 @@ export class Gc3Service {
   }
 
   // Lưu dữ liệu vào database
-  async saveReportDb(contents: any[], date: Date, data: any) {
+  async saveReportDb(contents: any, date: Date, data: any) {
     const signalData1 = [];
     const signalData2 = [];
-    for (const content of contents) {
-      if (content.name_signal.includes('Signal 1')) {
-        signalData1.push(content);
-      } else signalData2.push(content);
+    if (contents.data.length > 0) {
+      for (const content of contents.data) {
+        if (content.name_signal.includes('Signal 1')) {
+          signalData1.push(content);
+        } else signalData2.push(content);
+      }
     }
     const result = {
       folder_dir: data.folder_dir,
       signal_1: signalData1,
       signal_2: signalData2,
+      message: contents.message,
       date: date,
     };
     try {
@@ -156,7 +159,7 @@ export class Gc3Service {
   }
 
   //Loc du lieu
-  async extractSignalData(filePath: string): Promise<any[]> {
+  async extractSignalData(filePath: string): Promise<any> {
     try {
       const fileBuffer = await fs.readFile(filePath);
       // Convert the file buffer from UTF-16 LE with BOM to UTF-8
@@ -164,14 +167,29 @@ export class Gc3Service {
       // Extract "Signal" sections
       const signalSections = fileContent.match(/Signal \d+:.+?(Totals :.+?)/gs);
       if (signalSections) {
-        return this.parseSignalSections(signalSections);
+        const signalSectionsResult = [];
+        signalSections.forEach((item) => {
+          if (!item.includes('Peak')) {
+            signalSectionsResult.push(item);
+          }
+        });
+        return {
+          data: this.parseSignalSections(signalSectionsResult),
+          message: 'success',
+        };
       } else {
-        throw new Error(
-          `Signal data not found in the provided text. direct: ${filePath}`,
-        );
+        return {
+          data: [],
+          message:
+            'Signal data not found in the provided text. please update REPORT_SAVED.TXT and rename to Report',
+        };
       }
     } catch (error) {
-      throw new Error(`Error reading or processing the file: ${error.message}`);
+      return {
+        data: [],
+        message:
+          'Signal data not found in the provided text. please update REPORT_SAVED.TXT and rename to Report',
+      };
     }
   }
 

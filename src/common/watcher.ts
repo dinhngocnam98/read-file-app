@@ -21,7 +21,11 @@ export class watcherChokidar {
         '**/*_SAVED.TXT',
         '**/acq.txt',
         '**/intermediate.txt',
-        '**/*.bak'
+        '**/*.bak',
+        '**/*.lock',
+        '**/*.tmp',
+        '**/*.reg',
+        '**/*.LOCK',
       ],
       persistent: true,
       usePolling: true,

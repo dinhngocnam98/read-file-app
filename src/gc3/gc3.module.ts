@@ -65,6 +65,14 @@ export class Gc3Module {
           device: data.device,
         });
       });
+      data.watcher.on('change', (path: string) => {
+        logger.log('change: ', path);
+        const pathEdit = path.replace(/\\/g, '/');
+        this.Gc3Service.readFileContents({
+          folder_dir: pathEdit,
+          device: data.device,
+        });
+      });
     });
 
     // // //Doc lai file loi
