@@ -7,13 +7,13 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Gc3_report } from '../schemas/gc3_report.schema';
 
 @Injectable()
-export class Gc2Service {
+export class Gc3Service {
   constructor(
     @InjectModel(Gc3_report.name) private Gc3_reportModel: Model<Gc3_report>,
   ) {}
 
   errorDir: any[] = [];
-  logger = new Logger('MAY GC 2');
+  logger = new Logger('MAY GC 3');
 
   async readFileContents(data: any) {
     this.logger.log('Read folder: ' + data.folder_dir);

@@ -12,10 +12,13 @@ export class Gc3_report {
   signal_1: object[];
 
   @Prop()
-  signal_2: object[];
+  signal_3: object[];
 
   @Prop()
   date: Date;
+
+  @Prop()
+  message: string;
 
   @Prop({ default: Date.now })
   created_at: Date;

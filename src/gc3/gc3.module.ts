@@ -1,8 +1,8 @@
 import { Logger, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Gc3_report, Gc3_reportSchema } from '../schemas/gc3_report.schema';
+import { Gc3_report, Gc3_reportSchema } from '../schemas/Gc3_report.schema';
 import { watcherChokidar } from 'src/common/watcher';
-import { Gc3Service } from './gc3.service';
+import { Gc3Service } from './Gc3.service';
 
 @Module({
   imports: [
@@ -26,7 +26,7 @@ export class Gc3Module {
 
     // const folderPaths = await this.Gc3Service.readRoot(rootDir);
     const promises = [];
-    const folderPaths = [{ folder_dir: 'D:/Data', device: 'MAY GC 3' }];
+    const folderPaths = [{ folder_dir: 'D:/DATA', device: 'MAY GC 3' }];
     folderPaths.forEach((item: any) => {
       const promise = this.Gc3Service.readFileContents(item);
       promises.push(promise);
@@ -36,7 +36,6 @@ export class Gc3Module {
       .catch((error) => logger.error(error));
 
     // Theo dõi sự thay đổi trong thư mục và cập nhật nội dung của các tệp tin .txt
-
     folderPaths.forEach((data: any) => {
       this.watcherChokidar.watcherChokidar(data);
     });
